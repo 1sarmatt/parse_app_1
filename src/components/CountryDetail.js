@@ -5,20 +5,35 @@ import axios from 'axios';
 const CountryDetail = () => {
     const { name } = useParams();
     const [country, setCountry] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         axios.get(`https://restcountries.com/v3.1/name/${name}`)
-            .then(response => setCountry(response.data[0]))
-            .catch(error => setError(error));
+            .then(response => {
+                if (response.data.length > 0) {
+                    setCountry(response.data[0]);
+                } else {
+                    setError('Country not found');
+                }
+                setLoading(false);
+            })
+            .catch(error => {
+                setError('Error fetching country details: ' + error.message);
+                setLoading(false);
+            });
     }, [name]);
 
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
     if (error) {
-        return <div>Error fetching country details: {error.message}</div>;
+        return <div>{error}</div>;
     }
 
     if (!country) {
-        return <div>Loading...</div>;
+        return <div>No country data available.</div>;
     }
 
     return (
